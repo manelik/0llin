@@ -1,0 +1,8 @@
+1000   # Time steps:
+0.1   # (initial) time step
++1.d0 # Space-time curvature (0,1,-1)
+0.d0  # Cosmological constant
+1.d0  # Initial scale_factor
++1    # Sign of expansion (+1 expanding, -1 contracting)
+test  # Output directory name
+
