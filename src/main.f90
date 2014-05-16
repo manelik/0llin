@@ -1,4 +1,10 @@
 
+!
+! code 0llin
+!
+! 0+1 code that solves einstein (friedmann) equations in a simplified 3+1 scenario
+! when the spacetime is homogeneous and isotropic
+!
 
 
 program main
@@ -25,7 +31,7 @@ program main
 
 ! Time and related
   real(8) :: t, dt
-  integer :: Nt
+  integer :: Nt, ft
 
 ! An auxiliar real that can be reused many times in the code
 
@@ -55,12 +61,34 @@ program main
 
   smallpi =  acos(-1.d0)
 
+! Greeting
+
+  write(*,*)"******************************************"
+  write(*,*)"*   _______  .__  .__  .__               *"
+  write(*,*)"*   \   _  \ |  | |  | |__| ____         *"
+  write(*,*)"*   /  /_\  \|  | |  | |  |/    \        *"
+  write(*,*)"*   \  \_/   \  |_|  |_|  |   |  \       *"
+  write(*,*)"*    \_____  /____/____/__|___|  /       *"
+  write(*,*)"*          \/                  \/        *"
+  write(*,*)"*                                        *"
+  write(*,*)"*   A simple 0+1 relativistic code       *"
+  write(*,*)"*     First version: Yesterday           *"
+  write(*,*)"*     Last version:  Today               *"
+  write(*,*)"*                                        *"
+  write(*,*)"*     Author:       Jose Manuel          *"
+  write(*,*)"*                                        *"
+  write(*,*)"******************************************"
+
+
+
 ! Parse parameters
 
   write(*,*) "Time steps:"
   read(*,*) Nt
   write(*,*) "(initial) time step"
   read(*,*) dt
+  write(*,*) "Screen output frequency"
+  read(*,*) ft
   write(*,*) "Space-time curvature (0,1,-1)"
   read(*,*) k_curvature
   write(*,*) "Cosmological constant"
@@ -91,12 +119,13 @@ program main
   alpha_k1 = 1.d0
 ! Add matter contributions
 ! starting with cosmological constant  
+
   rho = cosmo_lambda/(8.d0*smallpi)
 
-  trS = - cosmo_lambda/(8.d0*smallpi)
+  trS = - 3.d0*cosmo_lambda/(8.d0*smallpi)
 
   rho_k1 =  cosmo_lambda/(8.d0*smallpi)
-  trS_K1 = -cosmo_lambda/(8.d0*smallpi)
+  trS_k1 = -3.d0*cosmo_lambda/(8.d0*smallpi)
 
 ! NOTE: alpha and matter sources are kept constant for the time being
 ! and because of this I calculate the midpoint values outside main loop just once
@@ -109,6 +138,10 @@ program main
   aux = 24.d0*smallpi*rho - 9.d0*k_curvature*exp(-4.d0*phi) 
   trK = -exp_sign*sqrt(aux)
 
+! Hamiltonian constraint, initially vanishes identically
+
+  ham = two*third*trK**2 + 6.d0*k_curvature*exp(-4.d0*phi)-16.d0*smallpi*rho
+
 ! ***********************
 !    Open outputfiles
 ! ***********************
@@ -117,11 +150,21 @@ program main
 
   open(unit=88,file=trim(out_dir)//"/phi.tl",status="unknown")
   open(unit=89,file=trim(out_dir)//"/trK.tl",status="unknown")
+  open(unit=90,file=trim(out_dir)//"/ham.tl",status="unknown")
 
 ! Write starting values
 
   write(88,"(2ES16.8)") t, phi
-  write(88,"(2ES16.8)") t, trK
+  write(89,"(2ES16.8)") t, trK
+  write(90,"(2ES16.8)") t, ham
+
+! Screen output
+  write(*,*)"+-------------------------------+"
+  write(*,*)"|  Time        |  Hamiltonian   |"
+  write(*,*)"+-------------------------------+"
+  write(*,"(2ES16.8)") t, ham
+
+
 
 ! ***********************
 !    Integrate
@@ -131,7 +174,7 @@ program main
      !Runge-Kutta2
      ! First evaluation, midpoint estimation
      phi_k1 = phi + half*dt*(-half*third*alpha*trK) 
-     trK_k1 = trK + half*dt*(4.d0*smallpi*(rho+trS))
+     trK_k1 = trK + half*dt*(alpha*(third*trK**2+ 4.d0*smallpi*(rho+trS)))
 
      ! Lapse for the moment is constant
      ! alpha_k1 = whatever...
@@ -139,11 +182,11 @@ program main
      ! Matter sources should be also updated at midpoint
      ! cosmological constant is constant and boring
      !rho_k1 =  cosmo_lambda/(8.d0*smallpi)
-     !trS_K1 = -cosmo_lambda/(8.d0*smallpi)
+     !trS_K1 = -3.d0*cosmo_lambda/(8.d0*smallpi)
 
      ! Final evaluation: Full step but with sources calculated at midpoints
      phi = phi + dt*(-half*third*alpha_k1*trK_k1)
-     trK_k1 = trK + half*dt*(4.d0*smallpi*(rho_k1+trS_k1))
+     trK = trK + dt*(alpha*(third*trK_k1**2 + 4.d0*smallpi*(rho_k1+trS_k1)))
 
      ! alpha = whatever
      ! rho = 
@@ -151,16 +194,28 @@ program main
 
      t = t + dt
 
+     ! update hamiltonian constraint
+     ham = two*third*trK**2 + 6.d0*k_curvature*exp(-4.d0*phi)-16.d0*smallpi*rho
+
      write(88,"(2ES16.8)") t, phi
      write(89,"(2ES16.8)") t, trK
+     write(90,"(2ES16.8)") t, ham
 
-
+! Output to screen
+     if(MOD(i,ft)==0) then
+        write(*,"(2ES16.8)") t, ham
+     end if
   end do
 
   close(88)
   close(89)
+  close(90)
 
+  write(*,*)"+-------------------------------+"
+  print*,
   print*, 
   print*, "Finished! Have a nice day!"
+  print*,
+  print*, 
 
 end program main

@@ -3,3 +3,13 @@
 0llin
 
 Simple Fortran code that solves Einstein equations for an homogeneous/isotropic scenario
+
+
+Compile by hand
+
+  (compiler) src/main.f90 -o 0llin
+
+
+Run tricking the console to read an input file
+
+./0llin < example.par
