@@ -148,15 +148,35 @@ program main
 
   call system('mkdir -p '//trim(out_dir))
 
+! Save parameters
+! It is convenient to save a copy of the parameters that produced the simulation
+  open(unit=88,file=trim(out_dir)//"/"//trim(out_dir)//".par",status="unknown")
+
+  write(88,*) Nt, "#Time steps:"
+  write(88,*) dt, "#(initial) time step"
+  write(88,*) ft, "#Screen output frequency"
+  write(88,*) k_curvature, "#Space-time curvature (0,1,-1)"
+  write(88,*) cosmo_lambda,"#Cosmological constant"
+  write(88,*) exp(phi), "#Initial scale_factor"
+  write(88,*) exp_sign, "#Sign of expansion (+1 expanding, -1 contracting)"
+  write(88,*) out_dir, "#Output directory name"
+
+  close(88)
+
+! Open outfiles
   open(unit=88,file=trim(out_dir)//"/phi.tl",status="unknown")
   open(unit=89,file=trim(out_dir)//"/trK.tl",status="unknown")
   open(unit=90,file=trim(out_dir)//"/ham.tl",status="unknown")
+  open(unit=91,file=trim(out_dir)//"/scale_factor.tl",status="unknown")
+  open(unit=92,file=trim(out_dir)//"/Hubble_factor.tl",status="unknown")
 
 ! Write starting values
 
   write(88,"(2ES16.8)") t, phi
   write(89,"(2ES16.8)") t, trK
   write(90,"(2ES16.8)") t, ham
+  write(91,"(2ES16.8)") t, exp(2.d0*phi)
+  write(92,"(2ES16.8)") t, -alpha*third*trK
 
 ! Screen output
   write(*,*)"+-------------------------------+"
@@ -200,6 +220,8 @@ program main
      write(88,"(2ES16.8)") t, phi
      write(89,"(2ES16.8)") t, trK
      write(90,"(2ES16.8)") t, ham
+     write(91,"(2ES16.8)") t, exp(2.d0*phi)
+     write(92,"(2ES16.8)") t, -alpha*third*trK
 
 ! Output to screen
      if(MOD(i,ft)==0) then
@@ -210,6 +232,8 @@ program main
   close(88)
   close(89)
   close(90)
+  close(91)
+  close(92)
 
   write(*,*)"+-------------------------------+"
   print*,
