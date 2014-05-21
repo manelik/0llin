@@ -1,0 +1,251 @@
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
+
+
+
+
+\documentclass[12pt,fleqn,b5paper]{article}
+
+% Load packages for symbols and figures.
+
+\usepackage[utf8]{inputenc} % Caracteres con acentos.
+\usepackage[spanish]{babel} % Títulos en español
+\usepackage{latexsym}       % Símbolos
+\usepackage{amsmath}  
+\usepackage{amssymb}        %Soporte para símbolos y fondos matemáticos
+\usepackage[pdftex]{color,graphicx} % FIGURAS PNG
+\usepackage{epsfig}       % .eps figures support
+\usepackage{epstopdf}     % to be able to run with pdflatex, requires                                                                                         
+                          % -shell-escape flag to automatically convert                                                                                       
+                          % eps figures to pdf in subfolders 
+\usepackage[pdftex]{hyperref}
+\usepackage{fix-cm}
+
+% Page settings.
+
+%\setlength{\textwidth}{170mm}
+%\setlength{\oddsidemargin}{-5mm}
+%\setlength{\evensidemargin}{-5mm}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%   BEGIN DOCUMENT   %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+% Reference equations with section number.
+
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+
+\parindent 0mm
+
+
+%%%%%%%%%%%%%%%%%
+%%%   TITLE   %%%
+%%%%%%%%%%%%%%%%%
+
+\title{C\'odigo \texttt{0llin}.  User's manual}
+
+\author{Jos\'e Manuel Torres \\
+Instituto de Ciencias Nucleares, UNAM \\
+malcubi@nucleares.unam.mx}
+
+\date{Month, Year}
+
+\maketitle
+
+\tableofcontents
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%%   INTRODUCTION   %%%
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pagebreak
+
+\section{Introducci\'on}
+
+El c\'odigo \texttt{0llin} resuelve las ecuaciones de Einstein para
+espacios homogéneos e isotrópicos. El objetivo de este es
+principalmente didáctico.
+
+
+%%%%%%%%%%%%%%%%%%%%
+%%%   DOWNLOAD   %%%
+%%%%%%%%%%%%%%%%%%%%
+
+\section{Descarga del c\'odigo}
+
+Si están leyendo esto probablemente ya consiguieron el c\'odigo. De no
+ser así el código por el momento es accesible en el repositorio libre\\
+
+\texttt{\footnotesize 
+  https://github.com/manelik/0llin} \\
+
+donde se encuentran opciones para descargar la branch ``master'' como
+archivo comprimido .zip o bien hacer un ``fork'' del proyecto en otras
+cuentas de github. Tambien es posible ``clonar'' el proyecto si se
+tiene {\bf git} previamente configurado\\
+
+\texttt{\footnotesize git clone 
+  git@github.com:manelik/0llin.git} \\
+
+{\bf NOTA: el primer caracter del nombre del código es el número
+  cero!}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%%   DIRECTORIES   %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Estructura de Archivos}
+
+Al descargar y descomprimir el código, sea cual sea el caso, el
+directorio raíz del código contiene las carpetas \texttt{/doc, /src}
+en las que se encuentran esta documentacion y las rutinas escritas en
+FORTRAN 90 respectivamente. Del mismo modo en el directorio raíz se
+encuentra el archivo \texttt{Makefile} que sirve para compilar el
+código. Para compilar con {\bf gfortran} basta correr el comando\\
+
+\texttt{make} \\
+
+desde el directorio raíz. En caso de usar otro compilador basta con
+editar la variable \texttt{FC} en el archivo Makefile. Por el momento
+no se han añadido banderas de optimización.
+
+Una vez compilado el ejecutable se genera en el directorio raíz y
+desde aquí basta con correr el comando\\
+
+\texttt{./0llin} \\
+
+Al inicio el código obtiene los parámetros directamente de la terminal
+pero es posible dar en su lugar un archivo con dichos parametros en el
+mismo orden en que se piden utilizando el redireccionador apropiado\\
+
+\texttt{./0llin < archivo.par} \\
+
+El código siempre genera un archivo de parámetros válido con el nombre
+del directorio de salida, para poder reproducir la simulación.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%%   OUTPUT FILES   %%%
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Output files}
+
+Los archivos de salida generados por el código se generan en el
+directorio especificado durante la ejecución. Estos son archivos con
+extensión .tl que contienen los valores guardados como texto en pares \\
+
+\texttt{time    F(time)}
+\\
+
+
+
+%%%%%%%%%%%%%%%%%%%%%
+%%%   SPACETIME   %%%
+%%%%%%%%%%%%%%%%%%%%%
+
+\setcounter{equation}{0}
+\section{Spacetime and evolution equations}
+
+La métrica en el código se asume de la forma
+\begin{equation}
+ds^2 = -\alpha(t)^{2} dt^2 + e^{4\phi(t)}{\hat\gamma}_{ij} dx^i dx^j  ,
+\end{equation}
+con $\alpha(t)$ el lapso, $e^{\phi(t)}$ el factor conforme y
+${\hat\gamma}_{ij}$ la métrica espacial conforme. La métrica física
+conforme es entonces $\gamma_{ij}=e^{4\phi(t)}{\hat\gamma}_{ij}$ Para
+espacios homogéneos e isotrópicos estas funciones dependen unicamente
+de $t$, y la métrica conforme se mantiene congelada en su valor
+inicial\footnote{Esto se debe a que el único grado de libertad que
+  posee un tensor simétrico de rango 2 es la traza, y las ecuaciones
+  de evolución mantienen esta forma. }. Un resultado particular es que
+el escalar de Ricci de las secciones a $t$ constante toma la forma
+\begin{equation}
+  \label{eq:Ricci}
+  R= e^{-4\phi}\hat R = 6 k e^{-4\phi} \;,\qquad k:= \hat R/6\;.
+\end{equation}
+La constante $k$ corresponde con la que usualmente aparece en el
+denominador de la componente radial de la métrica de
+Friedmann-Robertson-Walker escrita en coordenadas esféricas comoviles,
+y sin pérdida de generalidad puede tomar los valores $\{0,+1,-1\}$.
+
+\subsection{Evolution Equations}
+
+Bajo estas simetrías las secciones espaciales quedan caracterizadas
+por el factor conforme, o equivalentemente $\phi(t)$ y la traza de la
+curvatura extrínseca $K$ que mide la expansión de las geodésicas
+normales a las hipersuperficies. Sus ecuaciones de evolución están
+dadas por
+\begin{eqnarray}
+  \partial_t \phi &=& - \frac{1}{6} \alpha K \,, \\
+  \label{eq:sphere-chidot}
+  \partial_t K &=&   \frac{1}{3}\alpha K^2                                                                                           
+  + 4 \pi \alpha \left( \rho + S\right) \,, 
+  \label{eq:sphere-Kdot}
+\end{eqnarray}
+con los términos de materia
+\begin{eqnarray}
+  \label{eq:matter}
+  \rho&:=& n^\mu n^\nu T_{\mu\nu}, \\
+  S&:=&\gamma^{\mu\nu}T_{\mu\nu}\;. 
+\end{eqnarray}
+La única constricción no trivial en este caso es la Hamiltoniana, que
+toma la forma
+\begin{equation}
+  \label{eq:Ham}
+  \mathcal{H}:= 6ke^{-4\phi(t)}+\frac{2}{3}K(t)^2 -16\pi\rho(t)=0\;.
+\end{equation}
+
+\setcounter{equation}{0}
+\section{Matter}
+\label{sec:matter}
+En esta sección se enlistan los tipos de materia incluidos, sus
+contribuciones a las fuentes de la geometría y sus ecuaciones de evolución.
+
+\subsection{Constante cosmológica}
+\label{sec:lambda}
+
+Tensor de energía momento
+\begin{equation}
+  {T^\Lambda}_{\mu\nu} =  -\frac{\Lambda}{8\pi}g_{\mu\nu} \,.
+\end{equation}
+Proyecciones ADM
+\begin{eqnarray}
+  \label{eq:lambdaTmunu}
+  \rho^\Lambda &=&  \frac{\Lambda}{8\pi}\,,\\
+  S^\Lambda &=&  -3 \frac{\Lambda}{8\pi}\,.
+\end{eqnarray}
+
+La constante cosmológica no es dinámica y sus contribuciones son
+iguales a todo tiempo
+
+\subsection{Polvo}
+
+Tensor de energía momento
+\begin{equation}
+  {T^{\rm dust}}_{\mu\nu} =  \rho_0 u^\mu u^\nu .
+\end{equation}
+En cosmología consideramos el fluído en reposo $u^\mu=n^\mu$.
+
+Proyecciones ADM
+\begin{eqnarray}
+  \label{eq:dustTmunu}
+  \rho^{\rm dust} &=&  \rho_0 \,,\\
+  S^{\rm dust} &=&  0\,.
+\end{eqnarray}
+
+La ecuación de evolución se sigue de la conservación de partículas o
+de energía/momento de manera equivalente.
+
+\begin{equation}
+  \partial_t \rho_0 = \alpha K \rho_0\;. 
+\end{equation}
+
+\end{document}

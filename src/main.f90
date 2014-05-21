@@ -6,7 +6,6 @@
 ! when the spacetime is homogeneous and isotropic
 !
 
-
 program main
 ! Main routine of program 0llin (that is Ollin written with a zero replacing the "O")
 
@@ -25,6 +24,11 @@ program main
 
 ! Cosmological constant
   real(8) :: cosmo_lambda
+
+! Dust array
+  real(8) :: dust_rho0,dust_rho0_k1
+  logical :: has_dust
+!  integer :: Nfluid
 
 ! Space curvature
   real(8) :: k_curvature
@@ -96,8 +100,18 @@ program main
   write(*,*) "Initial scale_factor"
   read(*,*) aux
   phi = log(aux)
+
+  write(*,*) "Is dust included (.false./.true.)"
+  read(*,*) has_dust
+
+  if(has_dust) then
+     write(*,*) "Initial dust density"
+     read(*,*) dust_rho0
+  end if
+
   write(*,*) "Sign of expansion (+1 expanding, -1 contracting)"
   read(*,*) exp_sign 
+
   write(*,*) "Output directory name"
   read(*,*) out_dir
  
@@ -120,12 +134,18 @@ program main
 ! Add matter contributions
 ! starting with cosmological constant  
 
+
   rho = cosmo_lambda/(8.d0*smallpi)
 
   trS = - 3.d0*cosmo_lambda/(8.d0*smallpi)
 
-  rho_k1 =  cosmo_lambda/(8.d0*smallpi)
-  trS_k1 = -3.d0*cosmo_lambda/(8.d0*smallpi)
+! dust
+  rho = rho + dust_rho0
+!  dust is pressureless, it does not add to trS
+  
+
+!  rho_k1 =  cosmo_lambda/(8.d0*smallpi)
+!  trS_k1 = -3.d0*cosmo_lambda/(8.d0*smallpi)
 
 ! NOTE: alpha and matter sources are kept constant for the time being
 ! and because of this I calculate the midpoint values outside main loop just once
@@ -158,6 +178,8 @@ program main
   write(88,*) k_curvature, "#Space-time curvature (0,1,-1)"
   write(88,*) cosmo_lambda,"#Cosmological constant"
   write(88,*) exp(phi), "#Initial scale_factor"
+  write(88,*) has_dust, "#dust_included?"
+  if(has_dust)   write(88,*) dust_rho0, "#dust_initial density"
   write(88,*) exp_sign, "#Sign of expansion (+1 expanding, -1 contracting)"
   write(88,*) out_dir, "#Output directory name"
 
@@ -170,6 +192,8 @@ program main
   open(unit=91,file=trim(out_dir)//"/scale_factor.tl",status="unknown")
   open(unit=92,file=trim(out_dir)//"/Hubble_factor.tl",status="unknown")
 
+  if(has_dust) open(unit=93,file=trim(out_dir)//"/dust_rho0.tl",status="unknown")
+
 ! Write starting values
 
   write(88,"(2ES16.8)") t, phi
@@ -177,6 +201,7 @@ program main
   write(90,"(2ES16.8)") t, ham
   write(91,"(2ES16.8)") t, exp(2.d0*phi)
   write(92,"(2ES16.8)") t, -alpha*third*trK
+  if(has_dust)  write(93,"(2ES16.8)") t, dust_rho0
 
 ! Screen output
   write(*,*)"+-------------------------------+"
@@ -196,23 +221,36 @@ program main
      phi_k1 = phi + half*dt*(-half*third*alpha*trK) 
      trK_k1 = trK + half*dt*(alpha*(third*trK**2+ 4.d0*smallpi*(rho+trS)))
 
+     if(has_dust) dust_rho0_k1 = dust_rho0 +half*dt*( dust_rho0*alpha*trK)
+
      ! Lapse for the moment is constant
      ! alpha_k1 = whatever...
 
      ! Matter sources should be also updated at midpoint
      ! cosmological constant is constant and boring
-     !rho_k1 =  cosmo_lambda/(8.d0*smallpi)
-     !trS_K1 = -3.d0*cosmo_lambda/(8.d0*smallpi)
+     rho_k1 =  cosmo_lambda/(8.d0*smallpi)
+     trS_k1 = -3.d0*cosmo_lambda/(8.d0*smallpi)
+     ! Dust
+     if(has_dust) rho_k1 = rho_k1 + dust_rho0_k1
 
      ! Final evaluation: Full step but with sources calculated at midpoints
      phi = phi + dt*(-half*third*alpha_k1*trK_k1)
      trK = trK + dt*(alpha*(third*trK_k1**2 + 4.d0*smallpi*(rho_k1+trS_k1)))
+
+     if(has_dust) dust_rho0 = dust_rho0 +dt*( dust_rho0_k1*alpha_k1*trK_k1)
 
      ! alpha = whatever
      ! rho = 
      ! trS = 
 
      t = t + dt
+
+     ! update matter
+     ! Cosmological constant
+     rho =  cosmo_lambda/(8.d0*smallpi)
+     trS = -3.d0*cosmo_lambda/(8.d0*smallpi)
+     ! Dust
+     if(has_dust) rho = rho + dust_rho0
 
      ! update hamiltonian constraint
      ham = two*third*trK**2 + 6.d0*k_curvature*exp(-4.d0*phi)-16.d0*smallpi*rho
@@ -222,6 +260,7 @@ program main
      write(90,"(2ES16.8)") t, ham
      write(91,"(2ES16.8)") t, exp(2.d0*phi)
      write(92,"(2ES16.8)") t, -alpha*third*trK
+     if(has_dust) write(93,"(2ES16.8)") t, dust_rho0
 
 ! Output to screen
      if(MOD(i,ft)==0) then
@@ -234,6 +273,7 @@ program main
   close(90)
   close(91)
   close(92)
+  if(has_dust) close(93)
 
   write(*,*)"+-------------------------------+"
   print*,
