@@ -1,0 +1,14 @@
+10000   # Time steps:
+0.1   # (initial) time step
+1000   # Screen output frequency      
+0.d0 # Space-time curvature (0,1,-1)
+0.d-5  # Cosmological constant
+1.d0  # Initial scale_factor
+.false. # has dust?
+.true. # has scalar?
+1.0    # scalar field mass
+0.1    #initial scalar field
+0.0    #initial scalar time derivative
++1    # Sign of expansion (+1 expanding, -1 contracting)
+scalar1  # Output directory name
+
