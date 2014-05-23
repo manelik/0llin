@@ -248,4 +248,33 @@ de energía/momento de manera equivalente.
   \partial_t \rho_0 = \alpha K \rho_0\;. 
 \end{equation}
 
+\subsection{Campo escalar}
+
+Tensor de energía momento
+\begin{equation}
+  {T^{\rm sf}}_{\mu\nu} =  \nabla_\mu \varphi \nabla_\nu \varphi 
+  -\frac{1}{2} g_{\mu\nu}\left(\nabla^\sigma \varphi \nabla_\sigma \varphi + m^2\varphi^2\right)
+\end{equation}
+Conviene introducir una variable auxiliar.
+\begin{equation}
+  \Pi:= n^\mu \nabla_\mu\varphi\;.
+\end{equation}
+Entonces las proyecciones ADM quedan
+\begin{eqnarray}
+  \label{eq:dustTmunu}
+  \rho^{\rm sf} &=&  \frac{1}{2}\left(\Pi^2 + m^2\varphi^2\right) \,,\\
+  S^{\rm sf} &=&  \frac{3}{2}\left(\Pi^2 - m^2\varphi^2\right)\,.
+\end{eqnarray}
+
+El campo escalar evoluciona de acuerdo a la ecuación de Klein-Gordon
+\begin{equation}
+  \Box \varphi - m^2\varphi = 0\;,
+\end{equation}
+que puede reescribirse a primer orden como
+\begin{eqnarray}
+  \partial_t \varphi &=& \alpha \Pi \;, \\
+  \partial_t \Pi & =& \alpha \Pi K -m^2\alpha \varphi\;.
+\end{eqnarray}
+
+
 \end{document}
